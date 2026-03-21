@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+<head><title>🐀 VeraCrypt NAS Backup</title></head>
+<body>
+<h1>🐀 VeraCrypt NAS Backup UI</h1>
+{% if password_required %}
+  <form method="post">
+    <label>Enter NAS Password:</label><br>
+    <input type="password" name="password" required>
+    <button type="submit">Save Password</button>
+  </form>
+{% else %}
+  <p>NAS Mount: {{ '✅' if nas else '❌' }}</p>
+  <p>VeraCrypt Mount: {{ '✅' if vc else '❌' }}</p>
+  <form action="/backup" method="post"><button type="submit">Run Backup</button></form>
+  <form action="/verify" method="post"><button type="submit">Run Verify</button></form>
+  <p><a href="/logs">View Logs</a></p>
+{% endif %}
+</body>
+</html>

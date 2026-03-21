@@ -1,0 +1,14 @@
+
+[Unit]
+Description=VeraCrypt Backup Flask UI
+After=network.target
+
+[Service]
+ExecStart=/home/pi/.veracrypt-backup-env/bin/python /home/pi/veracrypt-nas-backup/ui/app.py
+WorkingDirectory=/home/pi/veracrypt-nas-backup/ui
+Restart=always
+User=pi
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

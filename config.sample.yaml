@@ -1,0 +1,21 @@
+# config.sample.yaml 🐀
+
+nas:
+  enabled: true
+  protocol: cifs
+  share: //192.168.1.42/backups
+  mount_point: /mnt/nas
+  username: youruser
+  # password: (DO NOT set here)
+  # Password will be securely prompted via the UI and stored only in memory during the session
+
+backup:
+  method: rsync
+  verify_with: hashdeep
+  source_dir: /mnt/nas/
+  destination_dir: /mnt/veracrypt-volume/
+  manifest_file: backup_manifest.txt
+
+log:
+  dir: logs
+  level: info
