@@ -1,20 +1,110 @@
 <!doctype html>
-<html>
-<head><title>🐀 VeraCrypt NAS Backup</title></head>
+<!--
+  index.html — Main dashboard for the VeraCrypt NAS Backup UI.
+
+  Sections:
+    1. VeraCrypt not installed warning  — shown if veracrypt binary is missing
+    2. Password form                    — shown if NAS password hasn't been set yet
+    3. Dashboard                        — shown once password is set; mount status
+                                          and backup/verify action buttons
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VeraCrypt NAS Backup</title>
+  <style>
+    /* Minimal, readable styling — no frameworks, no dependencies */
+    body        { font-family: monospace; max-width: 600px; margin: 40px auto; padding: 0 20px; }
+    h1          { border-bottom: 2px solid #333; padding-bottom: 8px; }
+    .warning    { background: #fff3cd; border: 1px solid #ffc107; padding: 16px; margin-bottom: 20px; border-radius: 4px; }
+    .warning h2 { margin-top: 0; color: #856404; }
+    .warning pre{ background: #f8f9fa; padding: 8px; border-radius: 3px; overflow-x: auto; }
+    .status     { margin: 16px 0; font-size: 1.1em; }
+    .actions    { margin-top: 24px; }
+    .actions form { display: inline; margin-right: 12px; }
+    button      { padding: 10px 20px; font-size: 1em; cursor: pointer; }
+    label       { display: block; margin-bottom: 6px; }
+    input[type="password"] { padding: 8px; font-size: 1em; width: 260px; }
+  </style>
+</head>
 <body>
-<h1>🐀 VeraCrypt NAS Backup UI</h1>
-{% if password_required %}
+
+  <h1>VeraCrypt NAS Backup</h1>
+
+  <!-- =========================================================
+       Section 1: VeraCrypt not installed warning
+       Shown when the veracrypt binary cannot be found on PATH.
+       The user must install VeraCrypt before backups can run.
+       ========================================================= -->
+  {% if not veracrypt_installed %}
+  <div class="warning">
+    <h2>⚠️ VeraCrypt is not installed</h2>
+    <p>The <code>veracrypt</code> command was not found. You must install it before running backups.</p>
+    <p><strong>To install VeraCrypt, run:</strong></p>
+    <pre>bash scripts/fetch-latest-veracrypt.sh</pre>
+    <p>Or install it manually — see <strong>README.md</strong> for full instructions.</p>
+    <p>Once installed, restart this UI and refresh the page.</p>
+  </div>
+  {% endif %}
+
+  <!-- =========================================================
+       Section 2: Password form
+       Shown when no NAS password has been set for this session.
+       The password is held in server memory only — never written
+       to disk, a cookie, or a database.
+       ========================================================= -->
+  {% if not password_set %}
+  <p>Enter your NAS password to begin. It will be held in memory for this session only.</p>
   <form method="post">
-    <label>Enter NAS Password:</label><br>
-    <input type="password" name="password" required>
-    <button type="submit">Save Password</button>
+    <label for="password">NAS Password:</label>
+    <input type="password" id="password" name="password" required autofocus>
+    <button type="submit">Set Password</button>
   </form>
-{% else %}
-  <p>NAS Mount: {{ '✅' if nas else '❌' }}</p>
-  <p>VeraCrypt Mount: {{ '✅' if vc else '❌' }}</p>
-  <form action="/backup" method="post"><button type="submit">Run Backup</button></form>
-  <form action="/verify" method="post"><button type="submit">Run Verify</button></form>
-  <p><a href="/logs">View Logs</a></p>
-{% endif %}
+
+  <!-- =========================================================
+       Section 3: Dashboard
+       Shown once the NAS password has been set.
+       Displays mount status and the backup/verify action buttons.
+       ========================================================= -->
+  {% else %}
+
+  <!-- Mount status indicators -->
+  <div class="status">
+    <div>NAS mount:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {{ '✅ Mounted' if nas else '❌ Not mounted' }}</div>
+    <div>VeraCrypt mount: {{ '✅ Mounted' if vc else '❌ Not mounted — mount it before running backup' }}</div>
+  </div>
+
+  <!-- Warning if VeraCrypt volume isn't mounted yet -->
+  {% if not vc %}
+  <div class="warning">
+    <strong>VeraCrypt volume not mounted.</strong>
+    Mount it first, then return here to run the backup:
+    <pre>sudo veracrypt /dev/sdX {{ vc_mount_path }}</pre>
+    Replace <code>/dev/sdX</code> with your actual device (check with <code>lsblk</code>).
+  </div>
+  {% endif %}
+
+  <!-- Action buttons -->
+  <div class="actions">
+    <!-- Run Backup: triggers backup.sh via /backup route -->
+    <form action="/backup" method="post">
+      <button type="submit" {% if not vc %}disabled title="Mount VeraCrypt volume first"{% endif %}>
+        Run Backup
+      </button>
+    </form>
+
+    <!-- Run Verify: triggers verify.sh via /verify route -->
+    <form action="/verify" method="post">
+      <button type="submit" {% if not vc %}disabled title="Mount VeraCrypt volume first"{% endif %}>
+        Run Verify
+      </button>
+    </form>
+  </div>
+
+  <p style="margin-top: 24px;"><a href="/logs">View Backup Log</a></p>
+
+  {% endif %}
+
 </body>
 </html>

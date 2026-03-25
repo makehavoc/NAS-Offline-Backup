@@ -1,9 +1,44 @@
 <!doctype html>
-<html>
-<head><title>📜 Backup Logs</title></head>
+<!--
+  logs.html — Backup log viewer.
+
+  Displays the raw contents of logs/backup.log in a scrollable <pre> block.
+  The log content is passed in from app.py as the `logs` template variable.
+  If no log file exists yet, a placeholder message is shown instead.
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Backup Log</title>
+  <style>
+    /* Minimal styling — matches the main dashboard */
+    body { font-family: monospace; max-width: 900px; margin: 40px auto; padding: 0 20px; }
+    h1   { border-bottom: 2px solid #333; padding-bottom: 8px; }
+    pre  {
+      background: #f4f4f4;
+      border: 1px solid #ddd;
+      padding: 16px;
+      overflow-x: auto;
+      white-space: pre-wrap;   /* wrap long lines rather than scrolling horizontally */
+      word-break: break-word;
+      font-size: 0.9em;
+      max-height: 70vh;        /* keep it on screen; scroll within the box */
+      overflow-y: auto;
+    }
+  </style>
+</head>
 <body>
-<h1>📜 Backup Logs</h1>
-<pre>{{ logs }}</pre>
-<p><a href="/">Back</a></p>
+
+  <h1>Backup Log</h1>
+
+  <!-- Log content is rendered as preformatted text to preserve timestamps
+       and rsync output formatting. The | e filter escapes any HTML characters
+       in the log content so it renders safely. -->
+  <pre>{{ logs | e }}</pre>
+
+  <!-- Link back to the main dashboard -->
+  <p><a href="/">Back to Dashboard</a></p>
+
 </body>
 </html>

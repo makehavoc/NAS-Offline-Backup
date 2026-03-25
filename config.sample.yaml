@@ -1,21 +1,89 @@
-# config.sample.yaml 🐀
+# =============================================================================
+# config.sample.yaml — Sample configuration for VeraCrypt NAS Backup v0.1.0
+# =============================================================================
+#
+# HOW TO USE THIS FILE:
+#   1. Copy this file to config.yaml in the project root:
+#        cp config.sample.yaml config.yaml
+#   2. Edit config.yaml with your actual values.
+#   3. NEVER commit config.yaml to git — it may contain sensitive paths.
+#      (config.yaml is already in .gitignore)
+#
+# DO NOT store passwords here. The NAS password is entered via the web UI
+# and held in memory only for the duration of the session.
+# =============================================================================
 
+
+# -----------------------------------------------------------------------------
+# nas — Settings for connecting to your NAS share over the network.
+# -----------------------------------------------------------------------------
 nas:
-  enabled: true
-  protocol: cifs
-  share: //192.168.1.42/backups
-  mount_point: /mnt/nas
-  username: youruser
-  # password: (DO NOT set here)
-  # Password will be securely prompted via the UI and stored only in memory during the session
 
+  # enabled: Set to true to enable NAS mounting. Currently must be true.
+  enabled: true
+
+  # protocol: The network filesystem protocol used to connect to the NAS.
+  # Supported value: cifs  (CIFS/SMB — the standard for Synology, QNAP, etc.)
+  protocol: cifs
+
+  # share: The network path to the NAS share in UNC format.
+  # Format:  //IP_ADDRESS/SHARE_NAME
+  # Example: //192.168.1.42/backups
+  share: //192.168.1.42/backups
+
+  # mount_point: The local directory where the NAS share will be mounted.
+  # This directory will be created automatically if it doesn't exist.
+  # Must be an absolute path.
+  mount_point: /mnt/nas
+
+  # username: The username for authenticating to the NAS share.
+  # This is the SMB/CIFS user on your NAS (not your Linux user).
+  username: youruser
+
+  # password: DO NOT set this here.
+  # Enter the NAS password via the web UI. It is held in memory only
+  # and never written to disk, a config file, or a log file.
+
+
+# -----------------------------------------------------------------------------
+# backup — Settings for the rsync backup and integrity verification.
+# -----------------------------------------------------------------------------
 backup:
+
+  # method: The tool used to copy files. Only rsync is supported.
   method: rsync
+
+  # verify_with: The tool used for integrity verification. Only hashdeep is supported.
   verify_with: hashdeep
+
+  # source_dir: The directory to back up. This should be the NAS mount point
+  # (or a subdirectory of it). Must end with a trailing slash so rsync copies
+  # the *contents* of the directory rather than the directory itself.
   source_dir: /mnt/nas/
+
+  # destination_dir: The directory to back up INTO. This must be the mount point
+  # of your VeraCrypt-encrypted volume. Mount the volume manually before running
+  # a backup:
+  #   sudo veracrypt /dev/sdX /mnt/veracrypt-volume
+  # Replace /dev/sdX with your actual device (check with: lsblk)
   destination_dir: /mnt/veracrypt-volume/
+
+  # manifest_file: Filename for the hashdeep integrity manifest.
+  # This file is stored inside the destination directory (on the VeraCrypt volume)
+  # so it stays with the backup. It is generated automatically after each backup
+  # and used by the verify function to check that nothing has changed.
   manifest_file: backup_manifest.txt
 
+
+# -----------------------------------------------------------------------------
+# log — Logging settings.
+# -----------------------------------------------------------------------------
 log:
+
+  # dir: Directory where log files are stored, relative to the project root.
+  # Created automatically on first run.
   dir: logs
+
+  # level: Logging verbosity. Currently informational only — all script output
+  # is logged regardless of this setting. Reserved for future use.
   level: info
